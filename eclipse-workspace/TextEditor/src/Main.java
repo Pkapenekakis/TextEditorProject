@@ -20,7 +20,8 @@ public class Main {
 		final int minWordSize = 5;
 		final int maxWordSize = 20;
 		final int pageSize = 128;
-		int byteTotal = 0, lineTotal = 0, numberOfPages = 0;
+		final int charPerLine = 80;
+		int charTotal = 0, lineTotal = 0, numberOfPages = 0;
 		int CurrentLine = 1; // starts as 1 (first line)
 		String line = null;
 		String userInp;
@@ -32,13 +33,17 @@ public class Main {
 		if (args.length > 0) {
 			File file = new File(args[0]);
 			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-
-			while ((line = br.readLine()) != null) { // adds all the lines as nodes of the list and counts total
-														// characters
-				dL.addLast(line); // adds the whole line as the node data
-				for (int i = 0; i < line.length(); i++)
-					if (line.charAt(i) != ' ')
-						byteTotal++;
+			String addLine = null;
+			
+			while ((line = br.readLine()) != null) { // adds all the lines as nodes of the list and counts total characters
+				if(line.length() > 80) //gets the 1st 80 characters of the line
+					addLine.substring(0, 80);
+				else
+					addLine = line;
+				dL.addLast(addLine); // adds the whole line as the node data
+				for (int i = 0; i < addLine.length(); i++)
+					if (addLine.charAt(i) != ' ')
+						charTotal++;
 				lineTotal++;
 			}
 
@@ -104,7 +109,7 @@ public class Main {
 				userInp = scanner.nextLine();
 				dL.addBefore(CurrentLine, userInp);
 				break;
-			case "d": // Del current line
+			case "d": // Delete current line
 				dL.remove(CurrentLine);
 				pos = pos.next;
 				System.out.println("line " + CurrentLine + " Deleted");
@@ -151,7 +156,7 @@ public class Main {
 				bW.close();
 				System.out.println("OK");
 				break;
-			case "x": // Exit and save TODO ask what should be done here
+			case "x": // Exit and save 
 				BufferedWriter bW1 = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 				Node<String> pNode1 = new Node<String>(null);
 				pNode1 = dL.getHead();
@@ -168,7 +173,7 @@ public class Main {
 				break;
 			case "#": // Print number of lines and characters
 				System.out.println("Total number of lines: " + lineTotal);
-				System.out.println("Total number of bytes: " + byteTotal);
+				System.out.println("Total number of bytes: " + charTotal);
 				break;
 			case "c": // Create the indexing file
 				BufferedReader indexReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
