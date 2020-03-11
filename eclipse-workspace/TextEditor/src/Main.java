@@ -36,8 +36,8 @@ public class Main {
 			String addLine = null;
 			
 			while ((line = br.readLine()) != null) { // adds all the lines as nodes of the list and counts total characters
-				if(line.length() > 80) //gets the 1st 80 characters of the line
-					addLine.substring(0, 80);
+				if(line.length() > charPerLine) //cuts out of the line the characters after the max amount allowed
+					addLine.substring(0, charPerLine);
 				else
 					addLine = line;
 				dL.addLast(addLine); // adds the whole line as the node data
@@ -298,33 +298,50 @@ public class Main {
 				ArrayList<Integer> lin = new ArrayList<Integer>();
 				Bsearch search = new Bsearch(fileAccess, converter);
 				int midPage = (numberOfPages/2)+1;
+				int currPage = midPage;
 				int dAccess = 0;
 				
 				System.out.println("Enter word to search for: ");
 				String wordToSearch = scanner.toString();
 				
-				lin = search.pageList(midPage, wordToSearch); //now lin contains the lines found
-						
-				while (search.getFoundStartEnd() != -1) { // when it is not found at the start or end of buffer is -1
-					if (search.getFoundStartEnd() == 1) // found at the start so need to search prev page
-						lin = search.pageList(midPage - 1, wordToSearch);
-					else if (search.getFoundStartEnd() == 2)
-						lin = search.pageList(midPage + 1, wordToSearch);
+				do {
+					lin = search.pageList(currPage, wordToSearch); //now lin contains the lines found
+					
+					while (search.getFoundStartEnd() != -1) { // when it is not found at the start or end of buffer is -1
+						if (search.getFoundStartEnd() == 1) { // found at the start so need to search prev page
+							currPage = currPage-1;
+							lin = search.pageList(currPage, wordToSearch);
+						}else if (search.getFoundStartEnd() == 2) {
+							currPage = currPage+1;
+							lin = search.pageList(currPage, wordToSearch);
+						}
+					}
+					
+					if (search.getWhereToNext() == 1) {
+						currPage = currPage + (currPage / 2);
+						lin = search.pageList(currPage, wordToSearch);
+					} else {
+						currPage = currPage - (currPage / 2);
+						lin = search.pageList(currPage, wordToSearch);
+					}
+					
+					dAccess = search.getDiscAccess();
+				} while (currPage<=numberOfPages || currPage>1);
+				
+				if(!(lin.isEmpty())) {
+					System.out.print("The word " + wordToSearch + " was found on lines: ");	
+					for(int i =0;i<lin.size();i++) {
+						System.out.println(lin.get(i) + " ");
+					}
+				}else {
+					System.out.println("The word " + wordToSearch + " was not found");
 				}
 				
-				if(search.getWhereToNext() == 1) {
-					lin = search.pageList(midPage+(midPage/2), wordToSearch);
-				}else {
-					lin = search.pageList(midPage-(midPage/2), wordToSearch);
-				} //TODO Probably need to wrap all the above in a while loop and create a var that init at mid-page and changes accordingly to perf b search
-				
-				dAccess = search.getDiscAccess(); 
-				
-				break;
+				break; 
 			default:
 				System.out.println("Bad Command");
 
-				br.close();
+			br.close();
 			}
 		} else {
 			System.out.println("You need to specify a file name!");
